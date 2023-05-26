@@ -7,14 +7,16 @@ channels = 3  # RGB
 PREPROCESS_BATCH_SIZE = 256
 
 # Training parameters
+LEARNING_RATE = 0.1
 BATCH_SIZE = 32
-EPOCHS = 50
+EPOCHS = 100
 START_EPOCH = 0
 FOLDS = 5
+START_FOLD = 0
 SEED = 2023
 
-dataset = "spp67"
-model_name = "mbn9"
+dataset = "spp68"
+model_name = "mobilenet-9"
 
 # Data augmentation parameters
 augmentations = dict(
@@ -24,7 +26,7 @@ augmentations = dict(
     zoom_range=0.025,
     horizontal_flip=True,  # randomly flip images
     vertical_flip=True,  # randomly flip images
-    fill_mode='nearest'  # points outside the boundaries
+    fill_mode='nearest',  # points outside the boundaries
 )
 
 
