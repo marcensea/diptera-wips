@@ -14,5 +14,3 @@ A neural network approach for diptera image classification.
 
 ### Usage:
 Run the file **user-launch.bat**. This will start processing data then training.
-
-#### *STILL MISSING: user scripts and training script*
