@@ -68,16 +68,24 @@ class WIP(metaclass=MetaWIP):
             raise TypeError('Value must be either int or str.')
 
     @classmethod
-    def fullname(cls, x):
-        """ Get the fullname from class integer """
-        return f"[{cls.classes.loc[cls.classes['Classes'] == x, 'Genera'].iloc[0]} class:{x}]"
+    def fullname(cls, model_class=None, spp=None):
+        """ Get the fullname from an integer, either model class or spp class.
+            names[0] is the genera, names[1] is the species/subspecies class number. """
+        col = 'Model output' if spp is None else 'Classes'
+        x = model_class if spp is None else spp
+        try:
+            names = cls.classes.loc[cls.classes[col] == x, ['Genera', 'Classes']].iloc[0]
+            return f"[{names[0]} spp:{names[1]}]"
+        except IndexError:
+            print(f"Error: {col} {x} does not exist in database.")
 
 
 # =====================================
 # References to class methods
 DATA_PATH = WIP.DATA_PATH
-abbreviations = WIP.abbreviations
 classes = WIP.classes
+load_classes = WIP.load_classes
+abbreviations = WIP.abbreviations
 get_abbreviation = WIP.get_abbreviation
 fullname = WIP.fullname
 # =====================================
@@ -101,15 +109,27 @@ def load_indices(dataset='spp68'):
             np.loadtxt(DATA_PATH / dataset / 'test_indices.csv', dtype=int))
 
 
-def load_pictures_names():
-    # Import a list of valid picture names (no missing image/label).
-    return pd.read_csv(DATA_PATH / 'valid_pictures.csv', header=None).squeeze("columns")
+# def load_valid_pictures():
+#     # Import a list of valid picture names (no missing image/label).
+#     return pd.read_csv(DATA_PATH / 'valid_pictures.csv', header=None).squeeze("columns")
 
 
-def open_dataset(dataset='spp68'):
+def load_database_split(dataset='spp68', col='Label'):
+    # Import picture names or labels from train-test split
+    assert col in ['Picture', 'Label']
+    column_array = load_database(dataset)[col].to_numpy()
+    train_indices, test_indices = load_indices(dataset)
+    return column_array[train_indices], column_array[test_indices]
+
+
+def load_images(dataset='spp68'):
     # Import image data
-    # Must be closed with dset.close() when done
-    return h5py.File(DATA_PATH / dataset / 'image_data.hdf5', 'r')
+    # dset must be closed with close() when done
+    dset = h5py.File(DATA_PATH / dataset / 'image_data.hdf5', 'r')
+    x_train = dset["train"][:]
+    x_test = dset["test"][:]
+    dset.close()
+    return x_train, x_test
 
 
 if __name__ == '__main__':
@@ -121,7 +141,8 @@ if __name__ == '__main__':
     print(get_abbreviation('anopheles'))
     print(get_abbreviation('aedes'))
     print(get_abbreviation('unknown species'))
-    print(fullname(34))
+    print(fullname(spp=34))
+    print(fullname(model_class=34))
 
     load_database()
     load_database(subset='spp68')
@@ -131,3 +152,4 @@ if __name__ == '__main__':
 
     classes.iloc[0, 0] = 100
     print(classes)
+
